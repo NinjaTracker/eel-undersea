@@ -15,14 +15,19 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: android-actions/setup-android@v3
+      # GitHub 的 ubuntu 机器已自带 Android SDK，这里只补装需要的版本
+      - name: Install Android SDK packages
+        run: |
+          SDKM=$(ls -d $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager | sort -V | tail -n 1)
+          yes | $SDKM --licenses > /dev/null || true
+          $SDKM "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
 
       - name: Build APK
-        run: gradle assembleRelease --no-daemon
+        run: gradle assembleRelease --no-daemon --stacktrace
 
       - uses: actions/upload-artifact@v4
         with:
